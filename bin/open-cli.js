@@ -14,7 +14,7 @@ program
   .description('CLI for OpenRouter AI models with project context')
   .version('0.1.0')
   .requiredOption('-m, --model <model>', 'AI model to use (e.g., openai/gpt-oss-20b)')
-  .option('-q, --question <question>', 'Ask a single question and exit')
+  .option('-q, --question <question...>', 'Ask a single question and exit')
   .parse();
 
 const options = program.opts();
@@ -61,7 +61,7 @@ async function main() {
         let question;
         if (options.question) {
         // Question provided as command line argument
-        question = options.question;
+        question = options.question.join(' ');
         } else {
         // Ask for question interactively
         question = await getUserInput('\n💭 What would you like to know? ');
