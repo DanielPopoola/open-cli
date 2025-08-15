@@ -3,8 +3,8 @@
 const { Command } = require('commander');
 const readline = require('readline');
 const ApiClient = require('../lib/api-client');
+const ChatSession = require('../lib/chat');
 const config = require('../lib/config');
-const { stdout } = require('process');
 
 // Set up command line interface
 const program = new Command();
@@ -15,6 +15,7 @@ program
   .version('0.1.0')
   .requiredOption('-m, --model <model>', 'AI model to use (e.g., openai/gpt-oss-20b)')
   .option('-q, --question <question...>', 'Ask a single question and exit')
+  .option('-c, --chat', 'Start interactive chat mode (default if no question provided)')
   .parse();
 
 const options = program.opts();
@@ -58,33 +59,46 @@ async function main() {
         const apiClient = new ApiClient();
 
         // Get user's question
-        let question;
         if (options.question) {
-        // Question provided as command line argument
-        question = options.question.join(' ');
+            // Single question mode
+            await handleSingleQuestion(apiClient, options.question);
         } else {
-        // Ask for question interactively
-        question = await getUserInput('\n💭 What would you like to know? ');
+            // Interactive chat mode
+            await startChatMode(apiClient);
         }
-
-        if (!question) {
-            console.log('No question provided. Goodbye! 👋');
-            return;
-        }
-
-        // Send question to AI
-        console.log('\n' + '='.repeat(50));
-        const response = await apiClient.sendMessage(options.model, question);
-
-        // Display response
-        console.log('\n🤖 Response:');
-        console.log(response);
-        console.log('\n' + '='.repeat(50));
 
     } catch (error) {
         console.error('\n❌ Unexpected error:', error.message);
         process.exit(1);
     }
+}
+
+/**
+ * Handle a single question and exit
+ * @param {ApiClient} apiClient - The API client
+ * @param {string} question - The question to ask
+ */
+
+async function handleSingleQuestion(apiClient, question) {
+    console.log('\n' + '='.repeat(50));
+    console.log('💭 Question:', question);
+    
+    question = options.question.join(' ');
+    const response = await apiClient.sendMessage(options.model, question);
+  
+    console.log('\n🤖 Response:');
+    console.log(response);
+    console.log('\n' + '='.repeat(50));
+    
+}
+
+/**
+ * Start interactive chat mode
+ * @param {ApiClient} apiClient - The API client
+ */
+async function startChatMode(apiClient) {
+  const chatSession = new ChatSession(apiClient, options.model);
+  chatSession.start();
 }
 
 // Handle Ctrl+C gracefully
