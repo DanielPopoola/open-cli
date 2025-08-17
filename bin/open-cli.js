@@ -16,6 +16,7 @@ program
   .requiredOption('-m, --model <model>', 'AI model to use (e.g., openai/gpt-oss-20b)')
   .option('-q, --question <question...>', 'Ask a single question and exit')
   .option('-c, --chat', 'Start interactive chat mode (default if no question provided)')
+  .option('--debug', 'Enable debug mode')
   .parse();
 
 const options = program.opts();
